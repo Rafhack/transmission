@@ -6,6 +6,7 @@ import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.ColorRes
+import androidx.core.content.ContextCompat
 import app.web.transmission_sama.R
 
 class PersonView @JvmOverloads constructor(
@@ -29,7 +30,8 @@ class PersonView @JvmOverloads constructor(
 
     private fun updatePaint() {
         this.paint = Paint().apply {
-            color = personColor
+            color = ContextCompat.getColor(context, personColor)
+            invalidate()
         }
     }
 

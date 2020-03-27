@@ -13,9 +13,6 @@ class EnvironmentActivity : AppCompatActivity() {
 
     private val viewModel by lazy { ViewModelProvider(this).get(EnvironmentViewModel::class.java) }
 
-    private val personDrawer by lazy { PersonDrawer(frmBoundary) }
-    private val siteDrawer by lazy { SiteDrawer(frmBoundary) }
-
     private val boundary by lazy {
         with(frmBoundary) {
             Rect(x.toInt(), y.toInt(), (x + width).toInt(), (y + height).toInt())
@@ -28,6 +25,11 @@ class EnvironmentActivity : AppCompatActivity() {
 
         setupObservables()
         setupTreeObserver()
+
+        frmBoundary.setOnClickListener {
+            viewModel.peopleList[0].isInfected = true
+            viewModel.peopleList[0].drawer.update()
+        }
     }
 
     private fun setupTreeObserver() {
@@ -36,7 +38,7 @@ class EnvironmentActivity : AppCompatActivity() {
             override fun onGlobalLayout() {
                 frmBoundary.viewTreeObserver.removeOnGlobalLayoutListener(this)
                 viewModel.generatePeople(boundary)
-                viewModel.generateSites(boundary)
+                viewModel.generateSites(boundary, 3)
             }
         })
     }
@@ -47,11 +49,17 @@ class EnvironmentActivity : AppCompatActivity() {
     }
 
     private fun setupSiteObservable() {
-        viewModel.siteLiveData.observe(this, Observer { siteDrawer.draw(it) })
+        viewModel.siteLiveData.observe(this, Observer {
+            it.attachDrawer(SiteDrawer(frmBoundary))
+            it.drawer.draw()
+        })
     }
 
     private fun setupPeopleObservable() {
-        viewModel.peopleLiveData.observe(this, Observer { personDrawer.draw(it) })
+        viewModel.peopleLiveData.observe(this, Observer {
+            it.attachDrawer(PersonDrawer(frmBoundary))
+            it.drawer.draw()
+        })
     }
 
 }

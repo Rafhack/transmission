@@ -1,24 +1,36 @@
 package app.web.transmission_sama.environment
 
-import android.graphics.Color
 import android.view.View
 import android.widget.FrameLayout
+import app.web.transmission_sama.R
 import app.web.transmission_sama.entities.Site
 import app.web.transmission_sama.ui.SiteView
 
 class SiteDrawer(private val container: FrameLayout) : Drawer<Site>() {
 
-    override fun draw(subject: Site) {
+    override fun draw() {
         getSiteView().apply {
             container.addView(this)
-            layoutParams = FrameLayout.LayoutParams(100, 200)
-            x = subject.position.first
-            y = subject.position.second
+            layoutParams = FrameLayout.LayoutParams(200, 200)
+            x = innerSubject.position.first
+            y = innerSubject.position.second
+        }
+    }
+
+    override fun update() {
+        container.findViewWithTag<SiteView>(innerSubject.id).apply {
+            setupView(this)
         }
     }
 
     private fun getSiteView(): View = SiteView(container.context).apply {
-        siteColor = Color.RED
+        tag = innerSubject.id
+        setupView(this)
+    }
+
+    private fun setupView(siteView: SiteView) = siteView.apply {
+        siteColor = if (innerSubject.isInfected) R.color.infected_person else R.color.not_infected
+        size = innerSubject.area
     }
 
 }

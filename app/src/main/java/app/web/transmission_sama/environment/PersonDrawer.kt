@@ -8,19 +8,28 @@ import app.web.transmission_sama.ui.PersonView
 
 class PersonDrawer(private var environment: FrameLayout) : Drawer<Person>() {
 
-    private var count = 0
-
-    override fun draw(subject: Person) {
-        getPersonView(subject).apply {
+    override fun draw() {
+        getPersonView().apply {
             environment.addView(this)
             layoutParams = FrameLayout.LayoutParams(100, 100)
-            x = subject.position.first
-            y = subject.position.second
+            x = innerSubject.position.first
+            y = innerSubject.position.second
         }
     }
 
-    private fun getPersonView(person: Person): View = PersonView(environment.context).apply {
-        personColor = if (person.isInfected) R.color.infected else R.color.not_infected
+    override fun update() {
+        environment.findViewWithTag<PersonView>(innerSubject.id).apply {
+            setupView(this)
+        }
+    }
+
+    private fun getPersonView(): View = PersonView(environment.context).apply {
+        tag = innerSubject.id
+        setupView(this)
+    }
+
+    private fun setupView(personView: PersonView) = personView.apply {
+        personColor = if (innerSubject.isInfected) R.color.infected_person else R.color.not_infected
     }
 
 }
