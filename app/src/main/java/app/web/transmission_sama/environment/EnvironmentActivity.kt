@@ -26,8 +26,11 @@ class EnvironmentActivity : AppCompatActivity() {
         }
     }
 
+    private val stepMap = mutableMapOf<Long, MutableList<Pair<Boolean, Boolean>>>()
+
     private val sizeOffset by lazy { resources.getDimensionPixelSize(R.dimen.person_view) / 2 }
 
+    @ExperimentalStdlibApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -38,12 +41,21 @@ class EnvironmentActivity : AppCompatActivity() {
         frmBoundary.setOnClickListener {
             viewModel.peopleList.forEach { person ->
                 Handler().postDelayed(50) {
-                    val newPosition = person.position.first.plus(if (random.nextBoolean()) 7f else -7f) to
-                            person.position.second.plus(if (random.nextBoolean()) 7f else -7f)
 
-                    if (newPosition.first + sizeOffset >= 0 && newPosition.first + sizeOffset <= frmBoundary.width &&
-                        newPosition.second + sizeOffset >= 0 && newPosition.second + sizeOffset <= frmBoundary.height
-                    ) person.position = newPosition
+                    val personSteps = stepMap[person.id] ?: mutableListOf()
+
+                    if (personSteps.isEmpty()) {
+                        val direction = random.nextBoolean() to random.nextBoolean()
+                        val stepsCount = random.nextInt(120 - 50) + 50
+                        for (i in 0 until stepsCount) personSteps.add(direction)
+                        stepMap[person.id] = personSteps
+                        movePerson(person, personSteps)
+                    } else {
+                        movePerson(person, personSteps)
+                        personSteps.removeAt(0)
+                        stepMap[person.id] = personSteps
+                    }
+
                     person.drawer.update()
                     postDelayed(it, 50)
                 }
@@ -51,6 +63,19 @@ class EnvironmentActivity : AppCompatActivity() {
 
             val person = viewModel.peopleList[0]
             startInfection(person)
+        }
+    }
+
+    private fun movePerson(person: Person, personSteps: MutableList<Pair<Boolean, Boolean>>) {
+        val newPosition = person.position.first.plus(if (personSteps[0].first) 3f else -3f) to
+                person.position.second.plus(if (personSteps[0].second) 3f else -3f)
+        if (newPosition.first + sizeOffset >= 0 && newPosition.first + sizeOffset <= frmBoundary.width &&
+            newPosition.second + sizeOffset >= 0 && newPosition.second + sizeOffset <= frmBoundary.height
+        ) {
+            person.position = newPosition
+        } else {
+            for (i in personSteps.indices) personSteps[i] = !personSteps[i].first to !personSteps[i].second
+            stepMap[person.id] = personSteps
         }
     }
 
@@ -63,7 +88,10 @@ class EnvironmentActivity : AppCompatActivity() {
                         abs(near.position.second - person.position.second) <= person.infectionRatio
             }
             nearby.forEach { near ->
-                if (!near.isInfected) startInfection(near)
+                if (!near.isInfected) Handler().postDelayed(
+                    { startInfection(near) },
+                    (random.nextInt(1000 - 500) + 500L)
+                )
             }
             postDelayed(it, 5000)
         }
@@ -74,7 +102,7 @@ class EnvironmentActivity : AppCompatActivity() {
             ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
                 frmBoundary.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                viewModel.generatePeople(boundary, sizeOffset, 80)
+                viewModel.generatePeople(boundary, sizeOffset, 100)
                 //         viewModel.generateSites(boundary, 3)
             }
         })

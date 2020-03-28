@@ -17,7 +17,7 @@ class EnvironmentViewModel : ViewModel() {
         const val DEFAULT_POPULATION = 100
         const val DEFAULT_BUILDING_COUNT = 10
         const val MINIMUM_INFECTION_RATIO = 50
-        const val MAXIMUM_INFECTION_RATIO = 150
+        const val MAXIMUM_INFECTION_RATIO = 100
     }
 
     private val random by lazy { Random(System.currentTimeMillis()) }
