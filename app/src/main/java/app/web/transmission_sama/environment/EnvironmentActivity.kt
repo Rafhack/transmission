@@ -8,6 +8,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import app.web.transmission_sama.R
+import app.web.transmission_sama.drawer.PersonDrawer
+import app.web.transmission_sama.drawer.SiteDrawer
 import app.web.transmission_sama.entities.Person
 import app.web.transmission_sama.postDelayed
 import kotlinx.android.synthetic.main.activity_main.*
@@ -26,8 +28,6 @@ class EnvironmentActivity : AppCompatActivity() {
         }
     }
 
-    private val stepMap = mutableMapOf<Long, MutableList<Pair<Boolean, Boolean>>>()
-
     private val sizeOffset by lazy { resources.getDimensionPixelSize(R.dimen.person_view) / 2 }
 
     @ExperimentalStdlibApi
@@ -35,47 +35,13 @@ class EnvironmentActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        setupObservables()
+        setupObservers()
         setupTreeObserver()
 
         frmBoundary.setOnClickListener {
-            viewModel.peopleList.forEach { person ->
-                Handler().postDelayed(50) {
-
-                    val personSteps = stepMap[person.id] ?: mutableListOf()
-
-                    if (personSteps.isEmpty()) {
-                        val direction = random.nextBoolean() to random.nextBoolean()
-                        val stepsCount = random.nextInt(120 - 50) + 50
-                        for (i in 0 until stepsCount) personSteps.add(direction)
-                        stepMap[person.id] = personSteps
-                        movePerson(person, personSteps)
-                    } else {
-                        movePerson(person, personSteps)
-                        personSteps.removeAt(0)
-                        stepMap[person.id] = personSteps
-                    }
-
-                    person.drawer.update()
-                    postDelayed(it, 50)
-                }
-            }
-
-            val person = viewModel.peopleList[0]
-            startInfection(person)
-        }
-    }
-
-    private fun movePerson(person: Person, personSteps: MutableList<Pair<Boolean, Boolean>>) {
-        val newPosition = person.position.first.plus(if (personSteps[0].first) 3f else -3f) to
-                person.position.second.plus(if (personSteps[0].second) 3f else -3f)
-        if (newPosition.first + sizeOffset >= 0 && newPosition.first + sizeOffset <= frmBoundary.width &&
-            newPosition.second + sizeOffset >= 0 && newPosition.second + sizeOffset <= frmBoundary.height
-        ) {
-            person.position = newPosition
-        } else {
-            for (i in personSteps.indices) personSteps[i] = !personSteps[i].first to !personSteps[i].second
-            stepMap[person.id] = personSteps
+            val patientZero = viewModel.peopleList[0]
+            startInfection(patientZero)
+            viewModel.movePeople(sizeOffset, boundary)
         }
     }
 
@@ -90,7 +56,7 @@ class EnvironmentActivity : AppCompatActivity() {
             nearby.forEach { near ->
                 if (!near.isInfected) Handler().postDelayed(
                     { startInfection(near) },
-                    (random.nextInt(1000 - 500) + 500L)
+                    (random.nextInt(2000 - 1000) + 1000L)
                 )
             }
             postDelayed(it, 5000)
@@ -108,19 +74,24 @@ class EnvironmentActivity : AppCompatActivity() {
         })
     }
 
-    private fun setupObservables() {
-        setupPeopleObservable()
-        setupSiteObservable()
+    private fun setupObservers() {
+        setupPeopleObserver()
+        setupSiteObserver()
+        setupMovementObserver()
     }
 
-    private fun setupSiteObservable() {
+    private fun setupMovementObserver() {
+        viewModel.movementLiveData.observe(this, Observer { it.drawer.update() })
+    }
+
+    private fun setupSiteObserver() {
         viewModel.siteLiveData.observe(this, Observer {
             it.attachDrawer(SiteDrawer(frmBoundary))
             it.drawer.draw()
         })
     }
 
-    private fun setupPeopleObservable() {
+    private fun setupPeopleObserver() {
         viewModel.peopleLiveData.observe(this, Observer {
             it.attachDrawer(PersonDrawer(frmBoundary))
             it.drawer.draw()

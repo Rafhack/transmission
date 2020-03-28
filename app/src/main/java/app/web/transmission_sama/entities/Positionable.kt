@@ -1,6 +1,6 @@
 package app.web.transmission_sama.entities
 
-import app.web.transmission_sama.environment.Drawer
+import app.web.transmission_sama.drawer.Drawer
 
 abstract class Positionable {
     abstract var position: Pair<Float, Float>

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#6200EE</color>
-    <color name="colorPrimaryDark">#2C0E6F</color>
-    <color name="colorAccent">#1B5B46</color>
+    <color name="colorPrimary">#B71C1C</color>
+    <color name="colorPrimaryDark">#5A0F0F</color>
+    <color name="colorAccent">#F57F17</color>
     <color name="background">#272727</color>
     <color name="infected_person">#741D20</color>
     <color name="person_infection">#05DA0710</color>
