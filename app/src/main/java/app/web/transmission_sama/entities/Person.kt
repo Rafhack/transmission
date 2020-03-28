@@ -1,7 +1,5 @@
 package app.web.transmission_sama.entities
 
-import app.web.transmission_sama.environment.Drawer
-
 class Person : Infectable, Positionable() {
     override var isInfected: Boolean = false
     override var resistanceToInfection: Float = 0f

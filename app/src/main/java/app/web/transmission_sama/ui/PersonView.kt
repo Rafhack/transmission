@@ -3,6 +3,8 @@ package app.web.transmission_sama.ui
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.ColorRes
@@ -18,19 +20,41 @@ class PersonView @JvmOverloads constructor(
     var personColor: Int = R.color.colorPrimary
         set(value) {
             field = value
-            updatePaint()
+            updatePersonPaint()
         }
 
-    private var paint = Paint()
+    @ColorRes
+    var infectionColor: Int = R.color.colorPrimary
+        set(value) {
+            field = value
+            updateInfectionPaint()
+        }
+
+    var infectionRatio: Float = 0f
+        set(value) {
+            field = value
+            invalidate()
+        }
+
+    private var personPaint = Paint()
+    private var infectionPaint = Paint()
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
-        canvas?.drawCircle(width / 2f, height / 2f, 10f, paint)
+        canvas?.drawCircle(width / 2f, height / 2f, 10f, personPaint)
+        canvas?.drawCircle(width / 2f, height / 2f, infectionRatio, infectionPaint)
     }
 
-    private fun updatePaint() {
-        this.paint = Paint().apply {
+    private fun updatePersonPaint() {
+        this.personPaint = Paint().apply {
             color = ContextCompat.getColor(context, personColor)
+            invalidate()
+        }
+    }
+
+    private fun updateInfectionPaint() {
+        this.infectionPaint = Paint().apply {
+            color = ContextCompat.getColor(context, infectionColor)
             invalidate()
         }
     }

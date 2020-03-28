@@ -5,5 +5,7 @@
     <color name="colorAccent">#1B5B46</color>
     <color name="background">#272727</color>
     <color name="infected_person">#741D20</color>
+    <color name="person_infection">#05DA0710</color>
     <color name="not_infected">#34741D</color>
+    <color name="person_non_infection">#00000000</color>
 </resources>

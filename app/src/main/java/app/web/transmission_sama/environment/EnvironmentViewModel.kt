@@ -16,6 +16,8 @@ class EnvironmentViewModel : ViewModel() {
     companion object {
         const val DEFAULT_POPULATION = 100
         const val DEFAULT_BUILDING_COUNT = 10
+        const val MINIMUM_INFECTION_RATIO = 50
+        const val MAXIMUM_INFECTION_RATIO = 150
     }
 
     private val random by lazy { Random(System.currentTimeMillis()) }
@@ -26,13 +28,16 @@ class EnvironmentViewModel : ViewModel() {
     var peopleList = arrayListOf<Person>()
     var siteList = arrayListOf<Site>()
 
-    fun generatePeople(boundary: Rect, maxPopulation: Int = DEFAULT_POPULATION) {
+    fun generatePeople(boundary: Rect, sizeOffset: Int, maxPopulation: Int = DEFAULT_POPULATION) {
         Observable.create<Person> {
             for (i in 0 until maxPopulation) {
                 Person().apply {
                     resistanceToInfection = random.nextFloat()
-                    position = getRandomPositionInBoundary(boundary)
-                    id = UUID.randomUUID().leastSignificantBits
+                    infectionRatio = (random.nextInt(
+                        MAXIMUM_INFECTION_RATIO - MINIMUM_INFECTION_RATIO
+                    ) + MINIMUM_INFECTION_RATIO).toFloat()
+                    position = getRandomPositionInBoundary(boundary, sizeOffset)
+                    id = UUID.randomUUID().mostSignificantBits
                     peopleList.add(this)
                     it.onNext(this)
                 }
@@ -47,9 +52,9 @@ class EnvironmentViewModel : ViewModel() {
         Observable.create<Site> {
             for (i in 0 until maxSites) {
                 Site().apply {
-                    position = getRandomPositionInBoundary(boundary)
+                    position = getRandomPositionInBoundary(boundary, 0)
                     area = 10 + random.nextInt() * (10 - 30)
-                    id = UUID.randomUUID().leastSignificantBits
+                    id = UUID.randomUUID().mostSignificantBits
                     siteList.add(this)
                     it.onNext(this)
                 }
@@ -60,11 +65,12 @@ class EnvironmentViewModel : ViewModel() {
         }
     }
 
-    private fun getRandomPositionInBoundary(boundary: Rect): Pair<Float, Float> {
-        return -(boundary.left / 2 + (Math.random()
-            .toFloat() * (boundary.left - boundary.right).toFloat())) to
-                -(boundary.top / 2 + (Math.random()
-                    .toFloat() * (boundary.top - boundary.bottom)))
+    private fun getRandomPositionInBoundary(boundary: Rect, sizeOffset: Int): Pair<Float, Float> {
+        return (-sizeOffset + random.nextInt(
+            boundary.right - boundary.left
+        )).toFloat() to (-sizeOffset + random.nextInt(
+            boundary.bottom - boundary.top
+        )).toFloat()
     }
 
 }
