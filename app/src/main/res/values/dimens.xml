@@ -2,4 +2,5 @@
 <resources>
     <dimen name="margin_environment">0dp</dimen>
     <dimen name="person_view">150dp</dimen>
+    <dimen name="infection_stroke_width">1dp</dimen>
 </resources>

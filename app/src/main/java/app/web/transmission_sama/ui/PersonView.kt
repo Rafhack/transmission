@@ -30,6 +30,13 @@ class PersonView @JvmOverloads constructor(
             updateInfectionPaint()
         }
 
+    @ColorRes
+    var infectionBorderColor: Int = R.color.colorPrimary
+        set(value) {
+            field = value
+            updateInfectionPaint()
+        }
+
     var infectionRatio: Float = 0f
         set(value) {
             field = value
@@ -38,11 +45,13 @@ class PersonView @JvmOverloads constructor(
 
     private var personPaint = Paint()
     private var infectionPaint = Paint()
+    private var infectionBorderPaint = Paint()
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         canvas?.drawCircle(width / 2f, height / 2f, 10f, personPaint)
         canvas?.drawCircle(width / 2f, height / 2f, infectionRatio, infectionPaint)
+        canvas?.drawCircle(width / 2f, height / 2f, infectionRatio, infectionBorderPaint)
     }
 
     private fun updatePersonPaint() {
@@ -55,6 +64,12 @@ class PersonView @JvmOverloads constructor(
     private fun updateInfectionPaint() {
         this.infectionPaint = Paint().apply {
             color = ContextCompat.getColor(context, infectionColor)
+            invalidate()
+        }
+        this.infectionBorderPaint = Paint().apply {
+            color = ContextCompat.getColor(context, infectionBorderColor)
+            strokeWidth = resources.getDimensionPixelSize(R.dimen.infection_stroke_width).toFloat()
+            style = Paint.Style.STROKE
             invalidate()
         }
     }

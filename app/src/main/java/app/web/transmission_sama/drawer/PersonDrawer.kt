@@ -28,6 +28,7 @@ class PersonDrawer(private var environment: FrameLayout) : Drawer<Person>() {
     private fun setupView(personView: PersonView) = personView.apply {
         personColor = if (innerSubject.isInfected) R.color.infected_person else R.color.not_infected
         infectionColor = if (innerSubject.isInfected) R.color.person_infection else android.R.color.transparent
+        infectionBorderColor = if (innerSubject.isInfected) R.color.infection_border else android.R.color.transparent
         infectionRatio = innerSubject.infectionRatio
         x = innerSubject.position.first
         y = innerSubject.position.second

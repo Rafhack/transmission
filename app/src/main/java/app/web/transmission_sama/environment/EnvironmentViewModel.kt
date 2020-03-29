@@ -7,11 +7,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import app.web.transmission_sama.entities.Person
 import app.web.transmission_sama.entities.Site
+import app.web.transmission_sama.nextIntBetween
 import app.web.transmission_sama.postDelayed
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers.mainThread
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.util.*
+import kotlin.math.abs
 import kotlin.random.Random
 
 class EnvironmentViewModel : ViewModel() {
@@ -32,8 +34,9 @@ class EnvironmentViewModel : ViewModel() {
     private val stepMap = mutableMapOf<Long, MutableList<Pair<Boolean, Boolean>>>()
 
     var peopleLiveData = MutableLiveData<Person>()
-    var siteLiveData = MutableLiveData<Site>()
     var movementLiveData = MutableLiveData<Person>()
+    var nearbyLiveData = MutableLiveData<List<Person>>()
+    var siteLiveData = MutableLiveData<Site>()
 
     var peopleList = arrayListOf<Person>()
     var siteList = arrayListOf<Site>()
@@ -43,9 +46,9 @@ class EnvironmentViewModel : ViewModel() {
             for (i in 0 until maxPopulation) {
                 Person().apply {
                     resistanceToInfection = random.nextFloat()
-                    infectionRatio = (random.nextInt(
-                        MAX_INFECTION_RATIO - MIN_INFECTION_RATIO
-                    ) + MIN_INFECTION_RATIO).toFloat()
+                    infectionRatio = (random.nextIntBetween(
+                        MAX_INFECTION_RATIO, MIN_INFECTION_RATIO
+                    )).toFloat()
                     position = getRandomPositionInBoundary(boundary, sizeOffset)
                     id = UUID.randomUUID().mostSignificantBits
                     peopleList.add(this)
@@ -75,6 +78,15 @@ class EnvironmentViewModel : ViewModel() {
         }
     }
 
+    fun getNearbyPeople(person: Person) {
+        Observable.create<List<Person>> { emitter ->
+            emitter.onNext(peopleList.filter { near ->
+                near != person && abs(near.position.first - person.position.first) <= person.infectionRatio &&
+                        abs(near.position.second - person.position.second) <= person.infectionRatio
+            })
+        }.subscribeOn(Schedulers.io()).observeOn(mainThread()).subscribe { nearbyLiveData.value = it }
+    }
+
     fun movePeople(sizeOffset: Int, boundary: Rect, stepSize: Float = DEFAULT_STEP_SIZE) {
         Observable.create<Person> { emitter ->
             peopleList.forEach { person ->
@@ -83,7 +95,7 @@ class EnvironmentViewModel : ViewModel() {
 
                     if (personSteps.isEmpty()) {
                         val direction = random.nextBoolean() to random.nextBoolean()
-                        val stepsCount = random.nextInt(MAX_REPEAT_STEPS - MIN_REPEAT_STEPS) + MAX_REPEAT_STEPS
+                        val stepsCount = random.nextIntBetween(MAX_REPEAT_STEPS, MIN_REPEAT_STEPS)
                         for (i in 0 until stepsCount) personSteps.add(direction)
                         stepMap[person.id] = personSteps
                         person.position = movePerson(person, personSteps, sizeOffset, boundary, stepSize)

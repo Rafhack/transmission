@@ -1,8 +1,9 @@
 package app.web.transmission_sama.entities
 
-interface Infection {
-    var name: String
-    var id: Long
-    var transmissionRatio: Float
-    var averageLifetime: Float
+abstract class Infection(protected var onSpreadListener: (Infectable) -> Unit) {
+    abstract var name: String
+    abstract var id: Long
+    abstract var averageLifetime: Float
+
+    abstract fun <T : Infectable> infect(infectable: T)
 }

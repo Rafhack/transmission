@@ -11,6 +11,7 @@ import app.web.transmission_sama.R
 import app.web.transmission_sama.drawer.PersonDrawer
 import app.web.transmission_sama.drawer.SiteDrawer
 import app.web.transmission_sama.entities.Person
+import app.web.transmission_sama.entities.Virus
 import app.web.transmission_sama.postDelayed
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
@@ -28,6 +29,12 @@ class EnvironmentActivity : AppCompatActivity() {
         }
     }
 
+    private val infection by lazy {
+        Virus { infectable ->
+            viewModel.getNearbyPeople(infectable as Person)
+        }
+    }
+
     private val sizeOffset by lazy { resources.getDimensionPixelSize(R.dimen.person_view) / 2 }
 
     @ExperimentalStdlibApi
@@ -39,28 +46,20 @@ class EnvironmentActivity : AppCompatActivity() {
         setupTreeObserver()
 
         frmBoundary.setOnClickListener {
+
             val patientZero = viewModel.peopleList[0]
-            startInfection(patientZero)
+            infection.infect(patientZero)
             viewModel.movePeople(sizeOffset, boundary)
+
+            //    startInfection(patientZero)
         }
     }
 
-    private fun startInfection(person: Person) {
-        person.isInfected = true
-
-        Handler().postDelayed(5000) {
-            val nearby = viewModel.peopleList.filter { near ->
-                near != person && abs(near.position.first - person.position.first) <= person.infectionRatio &&
-                        abs(near.position.second - person.position.second) <= person.infectionRatio
-            }
-            nearby.forEach { near ->
-                if (!near.isInfected) Handler().postDelayed(
-                    { startInfection(near) },
-                    (random.nextInt(2000 - 1000) + 1000L)
-                )
-            }
-            postDelayed(it, 5000)
-        }
+    private fun setupObservers() {
+        setupPeopleObserver()
+        setupSiteObserver()
+        setupMovementObserver()
+        setupNearbyObserver()
     }
 
     private fun setupTreeObserver() {
@@ -72,12 +71,6 @@ class EnvironmentActivity : AppCompatActivity() {
                 //         viewModel.generateSites(boundary, 3)
             }
         })
-    }
-
-    private fun setupObservers() {
-        setupPeopleObserver()
-        setupSiteObserver()
-        setupMovementObserver()
     }
 
     private fun setupMovementObserver() {
@@ -95,6 +88,12 @@ class EnvironmentActivity : AppCompatActivity() {
         viewModel.peopleLiveData.observe(this, Observer {
             it.attachDrawer(PersonDrawer(frmBoundary))
             it.drawer.draw()
+        })
+    }
+
+    private fun setupNearbyObserver() {
+        viewModel.nearbyLiveData.observe(this, Observer { nearby ->
+            nearby.forEach { infection.infect(it) }
         })
     }
 

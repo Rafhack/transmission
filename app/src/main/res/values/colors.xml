@@ -3,9 +3,11 @@
     <color name="colorPrimary">#B71C1C</color>
     <color name="colorPrimaryDark">#5A0F0F</color>
     <color name="colorAccent">#F57F17</color>
+
     <color name="background">#272727</color>
     <color name="infected_person">#741D20</color>
     <color name="person_infection">#05DA0710</color>
+    <color name="infection_border">#1DDA0710</color>
     <color name="not_infected">#34741D</color>
     <color name="person_non_infection">#00000000</color>
 </resources>
