@@ -2,7 +2,6 @@ package app.web.transmission_sama.environment
 
 import android.graphics.Rect
 import android.os.Bundle
-import android.os.Handler
 import android.view.ViewTreeObserver
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -12,16 +11,11 @@ import app.web.transmission_sama.drawer.PersonDrawer
 import app.web.transmission_sama.drawer.SiteDrawer
 import app.web.transmission_sama.entities.Person
 import app.web.transmission_sama.entities.Virus
-import app.web.transmission_sama.postDelayed
 import kotlinx.android.synthetic.main.activity_main.*
-import java.util.*
-import kotlin.math.abs
 
 class EnvironmentActivity : AppCompatActivity() {
 
     private val viewModel by lazy { ViewModelProvider(this).get(EnvironmentViewModel::class.java) }
-
-    private val random by lazy { Random() }
 
     private val boundary by lazy {
         with(frmBoundary) {
@@ -29,10 +23,10 @@ class EnvironmentActivity : AppCompatActivity() {
         }
     }
 
+    private var hasInfectionBegun = false
+
     private val infection by lazy {
-        Virus { infectable ->
-            viewModel.getNearbyPeople(infectable as Person)
-        }
+        Virus { infectable -> viewModel.getNearbyPeople(infectable as Person) }
     }
 
     private val sizeOffset by lazy { resources.getDimensionPixelSize(R.dimen.person_view) / 2 }
@@ -46,13 +40,12 @@ class EnvironmentActivity : AppCompatActivity() {
         setupTreeObserver()
 
         frmBoundary.setOnClickListener {
-
+            if (hasInfectionBegun) return@setOnClickListener
             val patientZero = viewModel.peopleList[0]
             patientZero.resistanceToInfection = 0f
             infection.infect(patientZero)
             viewModel.movePeople(sizeOffset, boundary)
-
-            //    startInfection(patientZero)
+            hasInfectionBegun = true
         }
     }
 
