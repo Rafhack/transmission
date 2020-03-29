@@ -48,6 +48,7 @@ class EnvironmentActivity : AppCompatActivity() {
         frmBoundary.setOnClickListener {
 
             val patientZero = viewModel.peopleList[0]
+            patientZero.resistanceToInfection = 0f
             infection.infect(patientZero)
             viewModel.movePeople(sizeOffset, boundary)
 
